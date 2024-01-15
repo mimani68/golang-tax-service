@@ -87,7 +87,7 @@ func (pu *cartUsecase) AddItemToCart(c *gin.Context) {
 			Quantity:    int(quantity),
 			Price:       item * float64(quantity),
 		}
-		pu.cartItemRepository.Create(&cartItemEntity)
+		pu.cartItemRepository.Create(c, &cartItemEntity)
 	} else {
 		result = pu.cartRepository.Where(" cart_id = ? and product_name  = ?", cartdomain.ID, addItemForm.Product).First(&cartItemEntity)
 
@@ -107,7 +107,7 @@ func (pu *cartUsecase) AddItemToCart(c *gin.Context) {
 		} else {
 			cartItemdomain.Quantity += int(quantity)
 			cartItemdomain.Price += item * float64(quantity)
-			pu.cartItemRepository.Save(&cartItemEntity)
+			pu.cartItemRepository.Save(c, &cartItemEntity)
 		}
 	}
 
@@ -158,13 +158,13 @@ func (pu *cartUsecase) DeleteCartItem(c *gin.Context) {
 
 	var cartItemEntity domain.CartItemEntity
 
-	result = pu.cartRepository.Where(" ID  = ?", cartItemID).First(&cartItemEntity)
+	result = pu.cartItemRepository.Where(" ID  = ?", cartItemID).First(&cartItemEntity)
 	if result.Error != nil {
 		c.Redirect(302, "/")
 		return
 	}
 
-	pu.cartRepository.Delete(c, &cartItemEntity)
+	pu.cartItemRepository.Delete(c, &cartItemEntity)
 	c.Redirect(302, "/")
 }
 
