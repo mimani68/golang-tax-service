@@ -16,14 +16,16 @@ import (
 )
 
 type cartUsecase struct {
-	cartRepository domain.CartRepository
-	contextTimeout time.Duration
+	cartRepository     domain.CartRepository
+	cartItemRepository domain.CartItemRepository
+	contextTimeout     time.Duration
 }
 
-func NewCartUsecase(cartRepository domain.CartRepository, timeout time.Duration) domain.CartUsecase {
+func NewCartUsecase(cartRepository domain.CartRepository, cartItemRepository domain.CartItemRepository, timeout time.Duration) domain.CartUsecase {
 	return &cartUsecase{
-		cartRepository: cartRepository,
-		contextTimeout: timeout,
+		cartRepository:     cartRepository,
+		cartItemRepository: cartItemRepository,
+		contextTimeout:     timeout,
 	}
 }
 
@@ -77,15 +79,15 @@ func (pu *cartUsecase) AddItemToCart(c *gin.Context) {
 		return
 	}
 
-	var cartItemEntity domain.CartItem
+	var cartItemEntity domain.CartItemEntity
 	if isCartNew {
-		cartItemEntity = domain.CartItem{
+		cartItemEntity = domain.CartItemEntity{
 			CartID:      cartdomain.ID,
 			ProductName: addItemForm.Product,
 			Quantity:    int(quantity),
 			Price:       item * float64(quantity),
 		}
-		pu.cartRepository.Create(&cartItemEntity)
+		pu.cartItemRepository.Create(&cartItemEntity)
 	} else {
 		result = pu.cartRepository.Where(" cart_id = ? and product_name  = ?", cartdomain.ID, addItemForm.Product).First(&cartItemEntity)
 
@@ -94,18 +96,18 @@ func (pu *cartUsecase) AddItemToCart(c *gin.Context) {
 				c.Redirect(302, "/")
 				return
 			}
-			cartItemEntity = domain.CartItem{
+			cartItemEntity = domain.CartItemEntity{
 				CartID:      cartdomain.ID,
 				ProductName: addItemForm.Product,
 				Quantity:    int(quantity),
 				Price:       item * float64(quantity),
 			}
-			pu.cartRepository.Create(&cartItemEntity)
+			pu.cartItemRepository.Create(c, &cartItemEntity)
 
 		} else {
 			cartItemdomain.Quantity += int(quantity)
 			cartItemdomain.Price += item * float64(quantity)
-			pu.cartRepository.Save(&cartItemEntity)
+			pu.cartItemRepository.Save(&cartItemEntity)
 		}
 	}
 
@@ -154,7 +156,7 @@ func (pu *cartUsecase) DeleteCartItem(c *gin.Context) {
 		return
 	}
 
-	var cartItemEntity domain.CartItem
+	var cartItemEntity domain.CartItemEntity
 
 	result = pu.cartRepository.Where(" ID  = ?", cartItemID).First(&cartItemEntity)
 	if result.Error != nil {
@@ -196,7 +198,7 @@ func (pu *cartUsecase) getCartItemData(sessionID string) (items []map[string]int
 		return
 	}
 
-	var cartItems []domain.CartItem
+	var cartItems []domain.CartItemEntity
 	result = pu.cartRepository.Where(fmt.Sprintf("cart_id = %d", cartdomain.ID)).Find(&cartItems)
 	if result.Error != nil {
 		return

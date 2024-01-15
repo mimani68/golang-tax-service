@@ -19,12 +19,13 @@ type CartEntity struct {
 }
 
 type CartUsecase interface {
-	// Create(c context.Context, task *Task) error
-	// FetchByUserID(c context.Context, userID string) ([]Task, error)
+	GetCartData(c context.Context) CartEntity
+	AddItemToCart(c context.Context, item string, card string) ([]CartEntity, error)
+	DeleteCartItem(c context.Context, cartItemID string) error
 }
 
 type CartRepository interface {
 	Create(c context.Context, cart *CartEntity) error
-	Where(c context.Context, criteria string) []Task
+	Where(c context.Context, criteria string) []CartEntity
 	Delete(c context.Context, cart *CartEntity) error
 }
