@@ -3,12 +3,13 @@ package controllers
 import (
 	"errors"
 	"github.com/gin-gonic/gin"
-	"interview/pkg/calculator"
+	"interview/usecase/calculator"
 	"net/http"
 	"time"
 )
 
 type TaxController struct {
+	calculator: calculator
 }
 
 func (t *TaxController) ShowAddItemForm(c *gin.Context) {
@@ -17,7 +18,7 @@ func (t *TaxController) ShowAddItemForm(c *gin.Context) {
 		c.SetCookie("ice_session_id", time.Now().String(), 3600, "/", "localhost", false, true)
 	}
 
-	calculator.GetCartData(c)
+	t.calculator.GetCartData(c)
 }
 
 func (t *TaxController) AddItem(c *gin.Context) {
@@ -28,7 +29,7 @@ func (t *TaxController) AddItem(c *gin.Context) {
 		return
 	}
 
-	calculator.AddItemToCart(c)
+	t.calculator.AddItemToCart(c)
 }
 
 func (t *TaxController) DeleteCartItem(c *gin.Context) {
@@ -39,5 +40,5 @@ func (t *TaxController) DeleteCartItem(c *gin.Context) {
 		return
 	}
 
-	calculator.DeleteCartItem(c)
+	t.calculator.DeleteCartItem(c)
 }
