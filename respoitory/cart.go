@@ -2,18 +2,17 @@ package repository
 
 import (
 	"context"
+	"interview/db"
 	"interview/domain"
 )
 
 type cartRepository struct {
-	database   string
-	collection string
+	database db.Database
 }
 
-func NewCartRepository(db string, collection string) domain.CartRepository {
+func NewCartRepository(db db.Database) domain.CartRepository {
 	return &cartRepository{
-		database:   db,
-		collection: collection,
+		database: db,
 	}
 }
 

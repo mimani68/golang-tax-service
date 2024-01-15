@@ -10,7 +10,7 @@ import (
 )
 
 type TaxController struct {
-	cart domain.CartUsecase
+	Cart domain.CartUsecase
 }
 
 func (t *TaxController) ShowAddItemForm(c *gin.Context) {
@@ -19,7 +19,7 @@ func (t *TaxController) ShowAddItemForm(c *gin.Context) {
 		c.SetCookie("ice_session_id", time.Now().String(), 3600, "/", "localhost", false, true)
 	}
 
-	t.cart.GetCartData(c)
+	t.Cart.GetCartData(c)
 }
 
 func (t *TaxController) AddItem(c *gin.Context) {
@@ -30,7 +30,7 @@ func (t *TaxController) AddItem(c *gin.Context) {
 		return
 	}
 
-	t.cart.AddItemToCart(c, "", "")
+	t.Cart.AddItemToCart(c, "", "")
 }
 
 func (t *TaxController) DeleteCartItem(c *gin.Context) {
@@ -41,5 +41,5 @@ func (t *TaxController) DeleteCartItem(c *gin.Context) {
 		return
 	}
 
-	t.cart.DeleteCartItem(c, "")
+	t.Cart.DeleteCartItem(c, "")
 }
