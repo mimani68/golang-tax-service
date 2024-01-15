@@ -1,13 +1,14 @@
 package main
 
 import (
-	"github.com/gin-gonic/gin"
+	"interview/db"
 	"interview/pkg/controllers"
-	"interview/pkg/db"
 	"net/http"
+
+	"github.com/gin-gonic/gin"
 )
 
-func main() {
+func Application() {
 	db.MigrateDatabase()
 
 	ginEngine := gin.Default()
