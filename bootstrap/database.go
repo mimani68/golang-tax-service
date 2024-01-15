@@ -5,11 +5,11 @@ import (
 	"log"
 )
 
-func NewMongoDatabase(db_connection string) db.Client {
+func NewDatabase(db_connection string) db.Client {
 	// ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	// defer cancel()
 
-	client, err := db.NewClient(db_connection)
+	client, err := db.NewMySqlClient(db_connection)
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -13,7 +13,7 @@ type Application struct {
 func App() Application {
 	app := &Application{}
 	app.Env = config.GetEnv()
-	app.Db = NewMongoDatabase(app.Env.DBConnection)
+	app.Db = NewDatabase(app.Env.DBConnection)
 	return *app
 }
 
