@@ -44,12 +44,13 @@ type CartItemForm struct {
 func (pu *cartUsecase) AddItemToCart(c *gin.Context, item string, card string) (domain.CartEntity, error) {
 	var isCartNew bool
 	var cartEntity domain.CartEntity
+	sessionId := item
 	_, err := pu.cartRepository.FindBySessionId(c, sessionId)
 
 	if err != nil {
 		if !errors.Is(err, gorm.ErrRecordNotFound) {
 			c.Redirect(302, "/")
-			return
+			return domain.CartEntity{}, err
 		}
 		isCartNew = true
 		cartEntity = domain.CartEntity{
@@ -62,19 +63,19 @@ func (pu *cartUsecase) AddItemToCart(c *gin.Context, item string, card string) (
 	addItemForm, err := pu.getCartItemForm(c)
 	if err != nil {
 		c.Redirect(302, "/?error="+err.Error())
-		return
+		return domain.CartEntity{}, err
 	}
 
 	item, ok := itemPriceMapping[addItemForm.Product]
 	if !ok {
 		c.Redirect(302, "/?error=invalid item name")
-		return
+		return domain.CartEntity{}, errors.New("Invalid item name")
 	}
 
 	quantity, err := strconv.ParseInt(addItemForm.Quantity, 10, 0)
 	if err != nil {
 		c.Redirect(302, "/?error=invalid quantity")
-		return
+		return domain.CartEntity{}, err
 	}
 
 	var cartItemEntity domain.CartItemEntity
@@ -87,12 +88,12 @@ func (pu *cartUsecase) AddItemToCart(c *gin.Context, item string, card string) (
 		}
 		pu.cartItemRepository.Create(c, &cartItemEntity)
 	} else {
-		result, err = pu.cartRepository.FindByProductName(c, cartdomain.ID, addItemForm.Product)
+		_, err = pu.cartRepository.FindByProductName(c, cartdomain.ID, addItemForm.Product)
 
 		if err != nil {
 			if !errors.Is(err, gorm.ErrRecordNotFound) {
 				c.Redirect(302, "/")
-				return
+				return domain.CartEntity{}, err
 			}
 			cartItemEntity = domain.CartItemEntity{
 				CartID:      cartdomain.ID,
@@ -110,6 +111,7 @@ func (pu *cartUsecase) AddItemToCart(c *gin.Context, item string, card string) (
 	}
 
 	c.Redirect(302, "/")
+	return domain.CartEntity{}, nil
 }
 
 func (pu *cartUsecase) getCartItemForm(c *gin.Context) (*CartItemForm, error) {
@@ -127,47 +129,47 @@ func (pu *cartUsecase) getCartItemForm(c *gin.Context) (*CartItemForm, error) {
 	return form, nil
 }
 
-func (pu *cartUsecase) DeleteCartItem(c *gin.Context) {
-	cartItemIDString := c.Query("cart_item_id")
-	if cartItemIDString == "" {
+func (pu *cartUsecase) DeleteCartItem(c *gin.Context, cartId string) error {
+	if cartId == "" {
 		c.Redirect(302, "/")
-		return
+		return errors.New("Cart is Empty")
 	}
 
 	cookie, _ := c.Request.Cookie("ice_session_id")
 
-	var cartEntity domain.CartEntity
-	result, err := pu.cartRepository.FindBySessionId(c, cookie.Value)
+	// var cartEntity domain.CartEntity
+	_, err := pu.cartRepository.FindBySessionId(c, cookie.Value)
 	// result := pu.cartRepository.Where(fmt.Sprintf("status = '%s' AND session_id = '%s'", domain.CartOpen, cookie.Value)).First(&cartEntity)
 	if err != nil {
 		c.Redirect(302, "/")
-		return
+		return errors.New("Cart is Incompatible with session value is Empty")
 	}
 
 	if cartdomain.Status == domain.CartClosed {
 		c.Redirect(302, "/")
-		return
+		return errors.New("Cart status is CLOSED")
 	}
 
 	cartItemID, err := strconv.Atoi(cartItemIDString)
 	if err != nil {
 		c.Redirect(302, "/")
-		return
+		return errors.New("Cart is Empty")
 	}
 
 	var cartItemEntity domain.CartItemEntity
 
-	result, errCartItem := pu.cartItemRepository.Where(" ID  = ?", cartItemID).First(&cartItemEntity)
+	_, errCartItem := pu.cartItemRepository.Where(" ID  = ?", cartItemID).First(&cartItemEntity)
 	if errCartItem != nil {
 		c.Redirect(302, "/")
-		return
+		return errors.New("Cart is Empty")
 	}
 
 	pu.cartItemRepository.Delete(c, &cartItemEntity)
 	c.Redirect(302, "/")
+	return nil
 }
 
-func (pu *cartUsecase) GetCartData(c *gin.Context) {
+func (pu *cartUsecase) GetCartData(c *gin.Context) domain.CartEntity {
 	data := map[string]interface{}{
 		"Error": c.Query("error"),
 		//"cartItems": cartItems,

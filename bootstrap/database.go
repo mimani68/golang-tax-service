@@ -3,18 +3,12 @@ package bootstrap
 import (
 	"interview/db"
 	"log"
+
+	"gorm.io/gorm"
 )
 
-func NewDatabase(db_connection string) db.Client {
-	// ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	// defer cancel()
-
-	client, err := db.NewMySqlClient(db_connection)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	err = client.Connect()
+func NewDatabase(db_connection string) *gorm.DB {
+	client, err := db.NewClient(db_connection)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -22,15 +16,15 @@ func NewDatabase(db_connection string) db.Client {
 	return client
 }
 
-func CloseDBConnection(client db.Client) {
+func CloseDBConnection(client *gorm.DB) {
 	if client == nil {
 		return
 	}
 
-	err := client.Disconnect()
-	if err != nil {
-		log.Fatal(err)
-	}
+	// err := client.DB()
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
 
 	log.Println("Connection to DB closed.")
 }

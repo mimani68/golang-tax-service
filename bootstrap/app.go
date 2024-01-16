@@ -2,12 +2,13 @@ package bootstrap
 
 import (
 	"interview/config"
-	"interview/db"
+
+	"gorm.io/gorm"
 )
 
 type Application struct {
 	Env config.Config
-	Db  db.Client
+	Db  *gorm.DB
 }
 
 func App() Application {
