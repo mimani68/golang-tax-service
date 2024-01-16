@@ -41,21 +41,19 @@ type CartItemForm struct {
 	Quantity string `form:"quantity"  binding:"required"`
 }
 
-func (pu *cartUsecase) AddItemToCart(c *gin.Context) {
-	cookie, _ := c.Request.Cookie("ice_session_id")
-
+func (pu *cartUsecase) AddItemToCart(c *gin.Context, item string, card string) (domain.CartEntity, error) {
 	var isCartNew bool
 	var cartEntity domain.CartEntity
-	result := pu.cartRepository.Where(fmt.Sprintf("status = '%s' AND session_id = '%s'", domain.CartOpen, cookie.Value)) /* .First(&cartEntity) */
+	_, err := pu.cartRepository.FindBySessionId(c, sessionId)
 
-	if result.Error != nil {
-		if !errors.Is(result.Error, gorm.ErrRecordNotFound) {
+	if err != nil {
+		if !errors.Is(err, gorm.ErrRecordNotFound) {
 			c.Redirect(302, "/")
 			return
 		}
 		isCartNew = true
 		cartEntity = domain.CartEntity{
-			SessionID: cookie.Value,
+			SessionID: sessionId,
 			Status:    domain.CartOpen,
 		}
 		pu.cartRepository.Create(c, &cartEntity)
@@ -89,10 +87,10 @@ func (pu *cartUsecase) AddItemToCart(c *gin.Context) {
 		}
 		pu.cartItemRepository.Create(c, &cartItemEntity)
 	} else {
-		result = pu.cartRepository.Where(" cart_id = ? and product_name  = ?", cartdomain.ID, addItemForm.Product).First(&cartItemEntity)
+		result, err = pu.cartRepository.FindByProductName(c, cartdomain.ID, addItemForm.Product)
 
-		if result.Error != nil {
-			if !errors.Is(result.Error, gorm.ErrRecordNotFound) {
+		if err != nil {
+			if !errors.Is(err, gorm.ErrRecordNotFound) {
 				c.Redirect(302, "/")
 				return
 			}
@@ -139,8 +137,9 @@ func (pu *cartUsecase) DeleteCartItem(c *gin.Context) {
 	cookie, _ := c.Request.Cookie("ice_session_id")
 
 	var cartEntity domain.CartEntity
-	result := pu.cartRepository.Where(fmt.Sprintf("status = '%s' AND session_id = '%s'", domain.CartOpen, cookie.Value)).First(&cartEntity)
-	if result.Error != nil {
+	result, err := pu.cartRepository.FindBySessionId(c, cookie.Value)
+	// result := pu.cartRepository.Where(fmt.Sprintf("status = '%s' AND session_id = '%s'", domain.CartOpen, cookie.Value)).First(&cartEntity)
+	if err != nil {
 		c.Redirect(302, "/")
 		return
 	}
@@ -158,8 +157,8 @@ func (pu *cartUsecase) DeleteCartItem(c *gin.Context) {
 
 	var cartItemEntity domain.CartItemEntity
 
-	result = pu.cartItemRepository.Where(" ID  = ?", cartItemID).First(&cartItemEntity)
-	if result.Error != nil {
+	result, errCartItem := pu.cartItemRepository.Where(" ID  = ?", cartItemID).First(&cartItemEntity)
+	if errCartItem != nil {
 		c.Redirect(302, "/")
 		return
 	}

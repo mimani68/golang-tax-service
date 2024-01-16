@@ -3,22 +3,22 @@ package route
 import (
 	"interview/api/controllers"
 	"interview/config"
-	"interview/db"
 	repository "interview/respoitory"
 	"interview/usecase"
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
-func Setup(config config.Config, timeout time.Duration, db db.Database, gin *gin.Engine) {
+func Setup(config config.Config, timeout time.Duration, db *gorm.DB, gin *gin.Engine) {
 	publicRouter := gin.Group("")
 
 	// All Public APIs
 	cartRepo := repository.NewCartRepository(db)
 	cartItemRepo := repository.NewCartItemRepository(db)
 	cartUsecase := usecase.NewCartUsecase(cartRepo, cartItemRepo, timeout)
-	taxController := controllers.TaxController{
+	taxController := controllers.CartController{
 		Cart: cartUsecase,
 	}
 	NewCartRouter(config, taxController, timeout, db, publicRouter)

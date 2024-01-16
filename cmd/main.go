@@ -6,11 +6,12 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
 func main() {
 	app := bootstrap.App()
-	db := app.Db.Database("sample")
+	db := app.*gorm.DB("sample")
 	defer app.CloseDBConnection()
 
 	gin := gin.Default()

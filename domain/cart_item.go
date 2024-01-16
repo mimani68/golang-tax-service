@@ -3,6 +3,7 @@ package domain
 import (
 	"context"
 
+	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
 
@@ -15,9 +16,9 @@ type CartItemEntity struct {
 }
 
 type CartItemUsecase interface {
-	// GetCartData(c context.Context) CartItemEntity
-	// AddItemToCart(c context.Context, item string, card string) ([]CartItemEntity, error)
-	// DeleteCartItem(c context.Context, cartItemID string) error
+	// GetCartData(c *gin.Context) CartItemEntity
+	AddItemToCart(c *gin.Context, sessionId string)
+	// DeleteCartItem(c *gin.Context, cartItemID string) error
 }
 
 type CartItemRepository interface {
