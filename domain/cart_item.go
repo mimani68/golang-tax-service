@@ -16,14 +16,18 @@ type CartItemEntity struct {
 }
 
 type CartItemUsecase interface {
-	// GetCartData(c *gin.Context) CartItemEntity
 	AddItemToCart(c *gin.Context, sessionId string)
-	// DeleteCartItem(c *gin.Context, cartItemID string) error
 }
 
 type CartItemRepository interface {
 	Create(c context.Context, cart *CartItemEntity) error
-	Where(c context.Context, criteria string) []CartItemEntity
-	Save(c context.Context, CartItemEntity string) error
-	Delete(c context.Context, cart *CartItemEntity) error
+	FindById(c context.Context, id int) (CartItemEntity, error)
+	FindByCartId(c context.Context, id int) ([]CartItemEntity, error)
+	Save(c context.Context, cartItemEntity CartItemEntity) error
+	Delete(c context.Context, id int) error
+}
+
+type CartItemForm struct {
+	Product  string `form:"product"   binding:"required"`
+	Quantity string `form:"quantity"  binding:"required"`
 }

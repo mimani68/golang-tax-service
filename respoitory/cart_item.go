@@ -21,14 +21,19 @@ func (tr *cartItemRepository) Create(c context.Context, cartItem *domain.CartIte
 	return nil
 }
 
-func (tr *cartItemRepository) Where(c context.Context, criteria string) []domain.CartItemEntity {
-	return []domain.CartItemEntity{}
+func (tr *cartItemRepository) FindById(c context.Context, id int) (domain.CartItemEntity, error) {
+	return domain.CartItemEntity{}, nil
 }
 
-func (tr *cartItemRepository) Delete(c context.Context, cartItem *domain.CartItemEntity) error {
+func (tr *cartItemRepository) FindByCartId(c context.Context, id int) ([]domain.CartItemEntity, error) {
+	// result = pu.cartItemRepository.Where(fmt.Sprintf("cart_id = %d", cartEntity.ID)).Find(&cartItems)
+	return []domain.CartItemEntity{}, nil
+}
+
+func (tr *cartItemRepository) Delete(c context.Context, id int) error {
 	return nil
 }
 
-func (tr *cartItemRepository) Save(c context.Context, CartItemEntity string) error {
+func (tr *cartItemRepository) Save(c context.Context, cartItemEntity domain.CartItemEntity) error {
 	return nil
 }

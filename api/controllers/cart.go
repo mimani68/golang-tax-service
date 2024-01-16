@@ -3,10 +3,13 @@ package controllers
 import (
 	"errors"
 	"interview/domain"
+	"interview/pkg/html"
+	"log"
 	"net/http"
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/binding"
 )
 
 type CartController struct {
@@ -14,12 +17,34 @@ type CartController struct {
 }
 
 func (t *CartController) ShowAddItemForm(c *gin.Context) {
+	data := map[string]interface{}{
+		"Error": c.Query("error"),
+	}
+
 	_, err := c.Request.Cookie("ice_session_id")
 	if errors.Is(err, http.ErrNoCookie) {
 		c.SetCookie("ice_session_id", time.Now().String(), 3600, "/", "localhost", false, true)
 	}
 
-	t.Cart.GetCartData(c)
+	cookie, err := c.Request.Cookie("ice_session_id")
+	if err == nil {
+		var errGetItemData error
+		data["CartItems"], errGetItemData = t.Cart.GetCartItemData(c, cookie.Value)
+		if errGetItemData == nil {
+			c.AbortWithStatus(400)
+			return
+		}
+	}
+
+	html, err := html.RenderTemplate(data)
+	if err != nil {
+		log.Println(err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	c.Header("Content-Type", "text/html")
+	c.String(200, html)
 }
 
 func (t *CartController) AddItem(c *gin.Context) {
@@ -30,10 +55,34 @@ func (t *CartController) AddItem(c *gin.Context) {
 		return
 	}
 
-	t.Cart.AddItemToCart(c, "", "")
+	if c.Request.Body == nil {
+		c.Redirect(400, "/")
+		return
+	}
+
+	itemObject := &domain.CartItemForm{}
+
+	if err := binding.FormPost.Bind(c.Request, itemObject); err != nil {
+		log.Println(err.Error())
+		c.Redirect(302, "?error="+err.Error())
+		return
+	}
+
+	err = t.Cart.AddItemToCart(c, cookie.Value, *itemObject)
+	if err != nil {
+		c.Redirect(302, "/")
+	} else {
+		c.Redirect(302, "/?error="+err.Error())
+	}
 }
 
 func (t *CartController) DeleteCartItem(c *gin.Context) {
+	cartItemIDString := c.Query("cart_item_id")
+	if cartItemIDString == "" {
+		c.Redirect(302, "/")
+		return
+	}
+
 	cookie, err := c.Request.Cookie("ice_session_id")
 
 	if err != nil || errors.Is(err, http.ErrNoCookie) || (cookie != nil && cookie.Value == "") {
@@ -41,5 +90,10 @@ func (t *CartController) DeleteCartItem(c *gin.Context) {
 		return
 	}
 
-	t.Cart.DeleteCartItem(c, "")
+	err = t.Cart.DeleteCartItem(c, cartItemIDString)
+	if err != nil {
+		c.Redirect(302, "/")
+	} else {
+		c.Redirect(302, "/?error="+err.Error())
+	}
 }

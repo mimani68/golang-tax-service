@@ -29,7 +29,7 @@ func (tr *cartRepository) FindBySessionId(c context.Context, session_id string) 
 	return value, nil
 }
 
-func (tr *cartRepository) FindByProductName(c context.Context, cart_id string, product_name string) (domain.CartItemEntity, error) {
+func (tr *cartRepository) FindByProductName(c context.Context, cart_id uint, product_name string) (domain.CartItemEntity, error) {
 	var value domain.CartItemEntity
 	query := " cart_id = ? and product_name  = ?"
 	_ = tr.database.Where(query, cart_id, product_name).First(&value)
