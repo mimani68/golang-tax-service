@@ -16,5 +16,4 @@ func main() {
 	timeout := time.Duration(10000) * time.Second
 	route.Setup(app.Env, timeout, app.Db, gin)
 	gin.Run(app.Env.ServerAddress)
-
 }

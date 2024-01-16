@@ -21,11 +21,12 @@ type Config struct {
 func GetEnv() Config {
 	err := godotenv.Load()
 	if err != nil {
-		log.Fatal("Error loading .env file")
+		log.Fatal("[Error] loading .env file encounter problem")
 	}
 
 	config := Config{
-		DBConnection: os.Getenv("DBConnection"),
+		DBConnection:  os.Getenv("DBConnection"),
+		ServerAddress: os.Getenv("ServerAddress"),
 	}
 
 	return config

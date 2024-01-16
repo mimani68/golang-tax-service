@@ -3,7 +3,7 @@ package db
 import (
 	"time"
 
-	"gorm.io/driver/postgres"
+	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
 
@@ -38,7 +38,7 @@ type postgresTable struct {
 }
 
 func NewClient(connection string) (*gorm.DB, error) {
-	db, err := gorm.Open(postgres.Open(connection), &gorm.Config{})
+	db, err := gorm.Open(mysql.Open(connection), &gorm.Config{})
 	if err != nil {
 		return nil, err
 	}
