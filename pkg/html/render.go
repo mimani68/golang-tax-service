@@ -8,7 +8,7 @@ import (
 
 func RenderTemplate(pageData interface{}) (string, error) {
 	// Read and parse the HTML template file
-	tmpl, err := template.ParseFiles("../../static/add_item_form.html")
+	tmpl, err := template.ParseFiles("../../../static/add_item_form.html")
 	if err != nil {
 		return "", fmt.Errorf("Error parsing template: %v ", err)
 	}
