@@ -50,10 +50,6 @@ func (pu *cartUsecase) AddItemToCart(c *gin.Context, cartSessionId string, itemF
 		pu.cartRepository.Create(c, &cartEntity)
 	}
 
-	if err != nil {
-		return err
-	}
-
 	item, ok := itemPriceMapping[itemForm.Product]
 	if !ok {
 		return errors.New("invalid item name")

@@ -28,15 +28,10 @@ func (t *CartController) ShowAddItemForm(c *gin.Context) {
 
 	cookie, err := c.Request.Cookie("ice_session_id")
 	if err == nil {
-		var errGetItemData error
-		data["CartItems"], errGetItemData = t.Cart.GetCartItemData(c, cookie.Value)
-		if errGetItemData == nil {
-			c.AbortWithStatus(400)
-			return
-		}
+		data["CartItems"], _ = t.Cart.GetCartItemData(c, cookie.Value)
 	}
 
-	html, err := html.RenderTemplate(data)
+	html, err := html.RenderTemplate("../static/add_item_form.html", data)
 	if err != nil {
 		log.Println(err)
 		c.AbortWithStatus(400)
@@ -70,9 +65,9 @@ func (t *CartController) AddItem(c *gin.Context) {
 
 	err = t.Cart.AddItemToCart(c, cookie.Value, *itemObject)
 	if err != nil {
-		c.Redirect(302, "/")
-	} else {
 		c.Redirect(302, "/?error="+err.Error())
+	} else {
+		c.Redirect(302, "/")
 	}
 }
 
