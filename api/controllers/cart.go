@@ -59,7 +59,7 @@ func (t *CartController) AddItem(c *gin.Context) {
 
 	if err := binding.FormPost.Bind(c.Request, itemObject); err != nil {
 		log.Println(err.Error())
-		c.Redirect(302, "?error="+err.Error())
+		c.Redirect(302, "/?error="+err.Error())
 		return
 	}
 
